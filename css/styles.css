@@ -1,0 +1,312 @@
+/* ============================================================
+   PONTOFLOW - SISTEMA DE PONTO ELETRÔNICO RESPONSIVO
+   Estilização Customizada, Animações e Folhas de Impressão (CLT)
+   ============================================================ */
+
+:root {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --dark-bg: #0f172a;
+    --card-bg: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar moderno e sutil */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #475569;
+}
+
+/* Efeito de relógio digital */
+.digital-clock-face {
+    font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
+    letter-spacing: 2px;
+    text-shadow: 0 0 25px rgba(59, 130, 246, 0.45);
+}
+
+/* Pulsação do ponto de gravação / sincronia */
+@keyframes live-pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+.pulse-indicator {
+    animation: live-pulse 2s infinite;
+}
+
+/* Animação do Scanner Facial na Câmera */
+@keyframes scanline {
+    0% {
+        top: 0%;
+        opacity: 0.8;
+    }
+    50% {
+        top: 92%;
+        opacity: 1;
+    }
+    100% {
+        top: 0%;
+        opacity: 0.8;
+    }
+}
+
+.scanner-beam {
+    position: absolute;
+    left: 5%;
+    width: 90%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #38bdf8, #60a5fa, transparent);
+    box-shadow: 0 0 15px #38bdf8;
+    animation: scanline 2.5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+/* Moldura de enquadramento facial */
+.viewfinder-corner {
+    width: 24px;
+    height: 24px;
+    border-color: #38bdf8;
+    position: absolute;
+}
+.viewfinder-tl { top: 16px; left: 16px; border-top-width: 3px; border-left-width: 3px; border-top-left-radius: 6px; }
+.viewfinder-tr { top: 16px; right: 16px; border-top-width: 3px; border-right-width: 3px; border-top-right-radius: 6px; }
+.viewfinder-bl { bottom: 16px; left: 16px; border-bottom-width: 3px; border-left-width: 3px; border-bottom-left-radius: 6px; }
+.viewfinder-br { bottom: 16px; right: 16px; border-bottom-width: 3px; border-right-width: 3px; border-bottom-right-radius: 6px; }
+
+/* Efeito de Flash na Captura da Foto */
+@keyframes flash-effect {
+    0% { opacity: 0; }
+    50% { opacity: 0.95; }
+    100% { opacity: 0; }
+}
+.camera-flash {
+    position: absolute;
+    inset: 0;
+    background: white;
+    z-index: 50;
+    animation: flash-effect 0.4s ease-out forwards;
+    pointer-events: none;
+}
+
+/* Recibo / Comprovante Estilo Térmico / Ticket */
+.receipt-paper {
+    background: #ffffff;
+    color: #1e293b;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.receipt-zigzag-bottom {
+    position: relative;
+}
+.receipt-zigzag-bottom::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    right: 0;
+    height: 10px;
+    background: radial-gradient(circle, transparent, transparent 50%, #ffffff 50%, #ffffff 100%);
+    background-size: 14px 14px;
+}
+
+/* Toast Notifications */
+#toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 90vw;
+    pointer-events: none;
+}
+
+.toast {
+    pointer-events: auto;
+    animation: toast-slide-in 0.3s ease-out forwards;
+    transition: all 0.3s ease;
+}
+
+@keyframes toast-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Teclado Numérico para Modo Totem / PIN */
+.numpad-btn {
+    transition: all 0.15s ease-in-out;
+}
+.numpad-btn:active {
+    transform: scale(0.92);
+    background-color: #3b82f6 !important;
+    color: white !important;
+}
+
+/* Cards Grandes de Seleção de Colaborador */
+.emp-selection-card {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+.emp-selection-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 28px -8px rgba(37, 99, 235, 0.3);
+}
+.emp-selection-card.is-active-emp {
+    border-color: #3b82f6 !important;
+    background: linear-gradient(145deg, rgba(30, 58, 138, 0.35), rgba(15, 23, 42, 0.95)) !important;
+    box-shadow: 0 0 0 2px #3b82f6, 0 12px 24px -6px rgba(59, 130, 246, 0.4);
+}
+
+/* Indicador de Status Visual no Avatar */
+.avatar-status-ring {
+    position: relative;
+}
+.avatar-status-ring::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #0f172a;
+}
+.avatar-status-working::after { background-color: #10b981; }
+.avatar-status-lunch::after { background-color: #f59e0b; }
+.avatar-status-out::after { background-color: #64748b; }
+
+/* Contagem Regressiva de Foto */
+.photo-countdown-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5rem;
+    font-weight: 900;
+    color: #38bdf8;
+    z-index: 40;
+    animation: countdown-pop 0.8s ease-out;
+}
+@keyframes countdown-pop {
+    0% { transform: scale(1.6); opacity: 0; }
+    50% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0.8); opacity: 0; }
+}
+
+/* ============================================================
+   REGRAS DE IMPRESSÃO (A4 - ESPELHO DE PONTO CONFORME CLT)
+   ============================================================ */
+@media print {
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 11pt;
+    }
+
+    /* Ocultar elementos desnecessários de navegação e botões */
+    header,
+    nav,
+    aside,
+    #sidebar,
+    #mobile-nav,
+    .no-print,
+    #bater-ponto-view,
+    #solicitacoes-view,
+    #gestao-view,
+    #totem-modal,
+    #camera-preview-container,
+    button {
+        display: none !important;
+    }
+
+    #main-content {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    /* Área de impressão oficial */
+    .printable-sheet {
+        display: block !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 10mm !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        font-size: 9pt !important;
+    }
+
+    th, td {
+        border: 1px solid #333333 !important;
+        padding: 4px 6px !important;
+        color: #000000 !important;
+    }
+
+    th {
+        background-color: #f1f5f9 !important;
+    }
+
+    /* Rodapé com linhas de assinatura obrigatórias CLT */
+    .print-signature-section {
+        display: flex !important;
+        justify-content: space-between !important;
+        margin-top: 40px !important;
+        page-break-inside: avoid;
+    }
+
+    .signature-box {
+        width: 45% !important;
+        text-align: center !important;
+        border-top: 1px solid #000000 !important;
+        padding-top: 8px !important;
+        font-size: 9pt !important;
+    }
+}

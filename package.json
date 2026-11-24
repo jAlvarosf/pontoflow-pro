@@ -1,0 +1,22 @@
+{
+  "name": "pontoflow-pro",
+  "version": "1.0.0",
+  "description": "Sistema web responsivo para registro e gestão de ponto eletrônico de funcionários com captura fotográfica instantânea em conformidade com a Portaria MTE 671/2021 e CLT.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "ponto-eletronico",
+    "clt",
+    "portaria-671",
+    "recursos-humanos",
+    "timesheet",
+    "espelho-de-ponto",
+    "webcam",
+    "reconhecimento-facial"
+  ],
+  "author": "jAlvarosf",
+  "license": "MIT"
+}

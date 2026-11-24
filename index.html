@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PontoFlow - Sistema de Ponto Eletrônico</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="min-h-full flex flex-col bg-slate-950 text-slate-100 selection:bg-blue-600 selection:text-white">
+
+    <!-- ============================================================
+         HEADER PRINCIPAL LIMPO, ORGANIZADO E RESPONSIVO (SEM QUEBRAS)
+         ============================================================ -->
+    <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-4 sm:px-6 py-3 no-print">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            
+            <!-- Logotipo Limpo e Direto -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/20 text-white text-lg font-black shrink-0">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-black text-lg tracking-tight text-white">PontoFlow</span>
+                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30 uppercase tracking-wider">Eletrônico</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 font-medium hidden sm:block">Registro e Controle de Ponto com Foto</p>
+                </div>
+            </div>
+
+            <!-- Navegação Desktop (Visível apenas quando RH estiver logado) -->
+            <nav id="rh-navigation-tabs" class="hidden items-center gap-1 bg-slate-800/80 p-1.5 rounded-xl border border-slate-700/60">
+                <button data-tab="bater-ponto" class="nav-tab-btn px-3 py-1.5 text-xs font-bold rounded-lg transition flex items-center gap-1.5 bg-blue-600 text-white shadow-sm">
+                    <i class="fa-solid fa-stopwatch"></i> Bater Ponto
+                </button>
+                <button data-tab="meu-espelho" class="nav-tab-btn px-3 py-1.5 text-xs font-bold rounded-lg transition flex items-center gap-1.5 text-slate-400 hover:bg-slate-700/60">
+                    <i class="fa-solid fa-calendar-days"></i> Espelho
+                </button>
+                <button data-tab="solicitacoes" class="nav-tab-btn px-3 py-1.5 text-xs font-bold rounded-lg transition flex items-center gap-1.5 text-slate-400 hover:bg-slate-700/60">
+                    <i class="fa-solid fa-file-signature"></i> Solicitações
+                </button>
+                <button data-tab="gestao" class="nav-tab-btn px-3 py-1.5 text-xs font-bold rounded-lg transition flex items-center gap-1.5 text-slate-400 hover:bg-slate-700/60">
+                    <i class="fa-solid fa-chart-pie"></i> Gestão RH
+                </button>
+            </nav>
+
+            <!-- Ações do Cabeçalho: Acesso RH / Totem (Sem menus quebrados) -->
+            <div class="flex items-center gap-2.5">
+                <button onclick="app.openTotemMode()" class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 transition shadow-sm" title="Modo Tablet para Entrada de Funcionários">
+                    <i class="fa-solid fa-tablet-screen-button text-emerald-400"></i>
+                    <span class="hidden sm:inline">Modo Totem</span>
+                </button>
+
+                <!-- Botão de Login do RH (quando deslogado) -->
+                <div id="rh-logged-out-box">
+                    <button onclick="app.openRhLoginModal()" class="flex items-center gap-2 px-3.5 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-600/20 transition">
+                        <i class="fa-solid fa-lock"></i>
+                        <span>Acesso RH</span>
+                    </button>
+                </div>
+
+                <!-- Painel do RH Autenticado (quando logado) -->
+                <div id="rh-logged-in-box" class="hidden items-center gap-2">
+                    <div class="hidden sm:flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-xl text-xs font-semibold text-emerald-400">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span id="rh-user-display-name">RH Conectado</span>
+                    </div>
+                    <button onclick="app.logoutRh()" class="px-3 py-2 text-xs font-bold bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 rounded-xl transition flex items-center gap-1.5" title="Encerrar sessão de RH">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span class="hidden sm:inline">Sair RH</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- ============================================================
+         CONTEÚDO PRINCIPAL (SPA VIEWS)
+         ============================================================ -->
+    <main id="main-content" class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 pb-24 md:pb-8">
+
+        <!-- ==========================================
+             VIEW 1: BATER PONTO (TELA PRINCIPAL)
+             HORA GRANDE DE UM LADO E LISTA DE COLABORADORES DO OUTRO
+             ========================================== -->
+        <div id="bater-ponto-view" class="tab-view space-y-6">
+
+            <!-- Layout Responsivo de Duas Colunas: Relógio Grande (Esq) + Colaboradores (Dir) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                
+                <!-- COLUNA ESQUERDA: RELÓGIO DIGITAL GRANDE + STATUS DO DIA -->
+                <div class="lg:col-span-5 space-y-6">
+                    
+                    <!-- Card do Relógio Gigante -->
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden text-center sm:text-left">
+                        <div class="absolute -right-12 -top-12 w-44 h-44 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                        <!-- Status Oficial de Brasília -->
+                        <div class="flex items-center justify-center sm:justify-start gap-2 mb-3">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-indicator"></span>
+                            <span class="text-xs font-semibold text-emerald-400 tracking-wide uppercase">Horário Oficial de Brasília</span>
+                        </div>
+
+                        <!-- Mostrador Gigante do Relógio Digital -->
+                        <div class="my-4">
+                            <div class="digital-clock-face text-6xl sm:text-7xl font-black text-white tracking-wider flex items-baseline justify-center sm:justify-start">
+                                <span id="clock-time">--:--</span>
+                                <span id="clock-seconds" class="text-3xl text-blue-400 font-bold ml-1">--</span>
+                            </div>
+                            <p id="clock-date" class="mt-2 text-sm text-slate-300 font-medium"></p>
+                        </div>
+
+                        <!-- Orientação Direta -->
+                        <div class="mt-5 p-3.5 bg-slate-950/80 rounded-2xl border border-slate-800 text-xs text-slate-400 flex items-center gap-3">
+                            <i class="fa-solid fa-circle-info text-blue-400 text-base shrink-0"></i>
+                            <span>Clique ou toque no seu cartão ao lado para registrar seu ponto com foto instantânea.</span>
+                        </div>
+
+                        <!-- Câmera Viewfinder (Abre no momento do registro ou visualização) -->
+                        <div id="camera-container" class="mt-4 relative w-full h-44 bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 flex items-center justify-center">
+                            <div class="scanner-beam"></div>
+                            <div class="viewfinder-corner viewfinder-tl"></div>
+                            <div class="viewfinder-corner viewfinder-tr"></div>
+                            <div class="viewfinder-corner viewfinder-bl"></div>
+                            <div class="viewfinder-corner viewfinder-br"></div>
+
+                            <video id="camera-feed" autoplay playsinline muted class="w-full h-full object-cover"></video>
+
+                            <div id="camera-fallback" class="hidden flex flex-col items-center justify-center p-3 text-center">
+                                <i class="fa-solid fa-camera text-slate-600 text-2xl mb-1"></i>
+                                <span class="text-xs font-semibold text-slate-300">Câmera Ativada no Registro</span>
+                                <span class="text-[10px] text-slate-500">Foto capturada no clique do colaborador</span>
+                            </div>
+
+                            <canvas id="capture-canvas" class="hidden"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Resumo Rápido de Registros de Hoje -->
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-3">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+                                <i class="fa-solid fa-list-check text-blue-400"></i> Batidas Registradas Hoje
+                            </h3>
+                            <span id="today-punches-count" class="text-xs font-bold text-slate-400"></span>
+                        </div>
+
+                        <div id="today-summary-list" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                            <!-- Preenchido via app.js -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- COLUNA DIREITA: LISTA DOS COLABORADORES COM FOTO E BOTÃO DE PONTO -->
+                <div class="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4">
+                    
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-800">
+                        <div>
+                            <h2 class="text-base font-black text-white flex items-center gap-2">
+                                <i class="fa-solid fa-users text-blue-400"></i> Colaboradores da Equipe
+                            </h2>
+                            <p class="text-xs text-slate-400">Selecione seu nome para bater o ponto com foto instantânea</p>
+                        </div>
+
+                        <!-- Campo de Busca Rápida -->
+                        <div class="relative w-full sm:w-60">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                            <input type="text" id="emp-search-input" placeholder="Buscar colaborador..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+
+                    <!-- Grid / Lista de Colaboradores com Foto e Botão de Ação -->
+                    <div id="large-employee-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5 pt-1">
+                        <!-- Gerado dinamicamente via app.js -->
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ==========================================
+             VIEW 2: MEU ESPELHO DE PONTO (ACESSO RH)
+             ========================================== -->
+        <div id="meu-espelho-view" class="tab-view hidden space-y-6">
+
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 p-6 rounded-3xl shadow-xl">
+                <div>
+                    <h2 class="text-xl font-black text-white flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-check text-blue-500"></i> Espelho de Ponto Eletrônico
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-0.5">Relatório consolidado de horários, cálculo de banco de horas e impressão oficial</p>
+                </div>
+
+                <div class="flex items-center gap-3 flex-wrap">
+                    <input type="month" id="timesheet-month-input" class="bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                    
+                    <button onclick="app.exportTimesheetCSV()" class="px-3 py-2 text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl border border-slate-700 transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-csv text-emerald-400"></i> Exportar CSV
+                    </button>
+
+                    <button onclick="app.printTimesheet()" class="px-4 py-2 text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition flex items-center gap-2 shadow-lg shadow-blue-600/20">
+                        <i class="fa-solid fa-print"></i> Imprimir Folha A4
+                    </button>
+                </div>
+            </div>
+
+            <!-- Cards de Indicadores do Mês -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl shadow-lg">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Trabalhado no Mês</span>
+                    <span id="ts-sum-worked" class="text-2xl font-black text-white font-mono mt-1 block">00:00</span>
+                    <span class="text-[10px] text-slate-500 mt-1 block">Horas registradas</span>
+                </div>
+
+                <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl shadow-lg">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Carga Prevista</span>
+                    <span id="ts-sum-expected" class="text-2xl font-black text-slate-300 font-mono mt-1 block">00:00</span>
+                    <span class="text-[10px] text-slate-500 mt-1 block">Jornada contratual CLT</span>
+                </div>
+
+                <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl shadow-lg">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Saldo Banco de Horas</span>
+                    <span id="ts-sum-balance" class="text-2xl font-black text-emerald-400 font-mono mt-1 block">+00:00</span>
+                    <span class="text-[10px] text-slate-500 mt-1 block">Acumulado mensal líquido</span>
+                </div>
+
+                <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl shadow-lg">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Dias Úteis Cumpridos</span>
+                    <span id="ts-sum-workdays" class="text-2xl font-black text-blue-400 font-mono mt-1 block">0 dias</span>
+                    <span class="text-[10px] text-slate-500 mt-1 block">Sem faltas injustificadas</span>
+                </div>
+            </div>
+
+            <!-- Tabela Interativa de Ponto -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+                <div id="print-emp-info" class="printable-sheet hidden"></div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-950/80 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                            <tr>
+                                <th class="py-3.5 px-4">Data / Dia</th>
+                                <th class="py-3.5 px-3 text-center">Entrada 1</th>
+                                <th class="py-3.5 px-3 text-center">Saída Intervalo</th>
+                                <th class="py-3.5 px-3 text-center">Retorno Intervalo</th>
+                                <th class="py-3.5 px-3 text-center">Saída Final</th>
+                                <th class="py-3.5 px-4 text-center">Total Horas</th>
+                                <th class="py-3.5 px-4 text-center">Saldo</th>
+                                <th class="py-3.5 px-4 text-right no-print">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timesheet-table-body" class="divide-y divide-slate-800">
+                            <!-- Preenchido via app.js -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="print-signature-section hidden px-8 py-6">
+                    <div class="signature-box">
+                        <p class="font-bold">Assinatura do Colaborador</p>
+                        <p class="text-[8pt] text-slate-500">Declaro que as informações e horários acima representam com exatidão a minha jornada de trabalho.</p>
+                    </div>
+                    <div class="signature-box">
+                        <p class="font-bold">Responsável Recursos Humanos / Gestão</p>
+                        <p class="text-[8pt] text-slate-500">PontoFlow Soluções de Ponto Eletrônico</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==========================================
+             VIEW 3: SOLICITAÇÕES & ATESTADOS (ACESSO RH)
+             ========================================== -->
+        <div id="solicitacoes-view" class="tab-view hidden space-y-6">
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Formulário de Nova Solicitação -->
+                <div class="lg:col-span-5 bg-slate-900/80 border border-slate-800 p-6 rounded-3xl shadow-xl">
+                    <h2 class="text-base font-bold text-white flex items-center gap-2 mb-1">
+                        <i class="fa-solid fa-pen-clip text-blue-400"></i> Nova Solicitação
+                    </h2>
+                    <p class="text-xs text-slate-400 mb-6">Envie justificativas de esquecimento de batida ou atestados médicos</p>
+
+                    <form id="adjustment-form" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Tipo de Solicitação</label>
+                            <select id="req-type-select" class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2.5 outline-none focus:border-blue-500">
+                                <option value="AJUSTE">Ajuste / Inclusão de Batida Esquecida</option>
+                                <option value="ATESTADO">Atestado Médico / Declaração de Consulta</option>
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Data da Ocorrência</label>
+                                <input type="date" id="req-date-input" required class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Horário Exato</label>
+                                <input type="time" id="req-time-input" value="08:00" class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Tipo de Batida Afetada</label>
+                            <select id="req-punch-type-select" class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                                <option value="entrada">Entrada (Início de Jornada)</option>
+                                <option value="saida_intervalo">Saída para Intervalo/Almoço</option>
+                                <option value="retorno_intervalo">Retorno do Almoço</option>
+                                <option value="saida">Saída (Fim de Jornada)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Justificativa e Detalhes</label>
+                            <textarea id="req-reason-input" rows="4" required placeholder="Descreva o motivo detalhado..." class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl p-3 outline-none focus:border-blue-500"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/20 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i> Enviar Solicitação para o RH
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Histórico de Solicitações -->
+                <div class="lg:col-span-7 bg-slate-900/80 border border-slate-800 p-6 rounded-3xl shadow-xl">
+                    <h2 class="text-base font-bold text-white flex items-center gap-2 mb-1">
+                        <i class="fa-solid fa-clock-rotate-left text-blue-400"></i> Histórico de Solicitações
+                    </h2>
+                    <p class="text-xs text-slate-400 mb-6">Acompanhe a avaliação e status dos pedidos</p>
+
+                    <div id="requests-history-list" class="space-y-3">
+                        <!-- Preenchido via app.js -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==========================================
+             VIEW 4: GESTÃO & PAINEL DO RH (ACESSO RESTRITO)
+             ========================================== -->
+        <div id="gestao-view" class="tab-view hidden space-y-6">
+
+            <!-- Cartões de Visão Geral do RH -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl shadow-lg">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Quadro de Colaboradores</span>
+                    <span id="admin-stat-total-emp" class="text-3xl font-black text-white font-mono mt-1 block">0</span>
+                    <span class="text-[10px] text-slate-500 mt-1 block">Ativos no sistema</span>
+                </div>
+
+                <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl shadow-lg">
+                    <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wider block">Trabalhando Agora</span>
+                    <span id="admin-stat-present" class="text-3xl font-black text-emerald-400 font-mono mt-1 block">0</span>
+                    <span class="text-[10px] text-slate-500 mt-1 block">Presentes hoje</span>
+                </div>
+
+                <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl shadow-lg">
+                    <span class="text-xs font-semibold text-amber-400 uppercase tracking-wider block">Em Intervalo / Almoço</span>
+                    <span id="admin-stat-lunch" class="text-3xl font-black text-amber-400 font-mono mt-1 block">0</span>
+                    <span class="text-[10px] text-slate-500 mt-1 block">Pausa regular</span>
+                </div>
+
+                <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-2xl shadow-lg">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Ausentes / Sem Batida</span>
+                    <span id="admin-stat-absent" class="text-3xl font-black text-rose-400 font-mono mt-1 block">0</span>
+                    <span class="text-[10px] text-slate-500 mt-1 block">Não iniciaram expediente</span>
+                </div>
+            </div>
+
+            <!-- Gráfico Analítico de Horas e Aprovação de Pedidos -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Gráfico de Horas na Semana -->
+                <div class="lg:col-span-7 bg-slate-900/80 border border-slate-800 p-6 rounded-3xl shadow-xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-white flex items-center gap-2 mb-1">
+                            <i class="fa-solid fa-chart-column text-blue-400"></i> Horas Trabalhadas na Semana (Equipe)
+                        </h3>
+                        <p class="text-xs text-slate-400 mb-4">Volume total consolidado nos últimos 7 dias</p>
+                    </div>
+                    <div class="h-64 w-full">
+                        <canvas id="admin-weekly-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Solicitações Pendentes para o RH Aprovar -->
+                <div class="lg:col-span-5 bg-slate-900/80 border border-slate-800 p-6 rounded-3xl shadow-xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-bell text-amber-400"></i> Solicitações Pendentes
+                                </h3>
+                                <p class="text-xs text-slate-400">Requer aprovação para reflexo na folha</p>
+                            </div>
+                        </div>
+                        <div id="admin-pending-requests-list" class="space-y-3 max-h-72 overflow-y-auto pr-1">
+                            <!-- Preenchido via app.js -->
+                        </div>
+                    </div>
+                    <div class="pt-4 border-t border-slate-800 text-center">
+                        <button onclick="app.openNewEmployeeModal()" class="w-full py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-user-plus text-blue-400"></i> Cadastrar Novo Colaborador
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela de Gestão de Colaboradores -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl">
+                <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-users-viewfinder text-blue-400"></i> Gestão do Quadro de Colaboradores
+                        </h3>
+                        <p class="text-xs text-slate-400">Gerenciamento: visualizar, editar dados e fotos, e excluir colaboradores</p>
+                    </div>
+                    <button onclick="app.openNewEmployeeModal()" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition flex items-center gap-2 shadow-lg shadow-blue-600/20">
+                        <i class="fa-solid fa-plus"></i> Novo Colaborador
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-950/80 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                            <tr>
+                                <th class="py-3 px-4">Colaborador</th>
+                                <th class="py-3 px-4">Status Hoje</th>
+                                <th class="py-3 px-4">Última Batida</th>
+                                <th class="py-3 px-4 text-center">PIN Único</th>
+                                <th class="py-3 px-4 text-right">Ações do Perfil</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-live-presence-list" class="divide-y divide-slate-800">
+                            <!-- Preenchido via app.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- ============================================================
+         BARRA DE NAVEGAÇÃO MOBILE (SMARTPHONES) - LIMPA
+         ============================================================ -->
+    <nav id="mobile-nav" class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 px-3 py-2 flex items-center justify-around no-print">
+        <button data-tab="bater-ponto" class="nav-tab-btn flex flex-col items-center gap-1 text-[10px] font-bold text-blue-400 px-3 py-1 rounded-xl transition">
+            <i class="fa-solid fa-clock text-base"></i> Ponto
+        </button>
+        <button onclick="app.openTotemMode()" class="flex flex-col items-center gap-1 text-[10px] font-bold text-emerald-400 px-3 py-1 rounded-xl transition">
+            <i class="fa-solid fa-tablet-screen-button text-base"></i> Totem
+        </button>
+        <button id="mobile-rh-btn" onclick="app.toggleMobileRh()" class="flex flex-col items-center gap-1 text-[10px] font-bold text-slate-400 px-3 py-1 rounded-xl transition">
+            <i class="fa-solid fa-lock text-base"></i> Acesso RH
+        </button>
+    </nav>
+
+    <!-- ============================================================
+         MODAL: LOGIN DO RESPONSÁVEL DO RH (ACESSO RESTRITO)
+         ============================================================ -->
+    <div id="rh-login-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl relative space-y-4">
+            <div class="text-center pb-2">
+                <div class="w-12 h-12 bg-blue-600/20 text-blue-400 rounded-2xl flex items-center justify-center mx-auto text-xl border border-blue-500/30 mb-3 shadow">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h3 class="font-bold text-white text-lg">Acesso Restrito - RH</h3>
+                <p class="text-xs text-slate-400 mt-1">Digite seu PIN ou senha de gestor para acessar relatórios, espelhos e edição.</p>
+            </div>
+
+            <form id="rh-login-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">PIN ou Senha de Acesso</label>
+                    <input type="password" id="rh-login-pin" required placeholder="Digite seu PIN (padrão: 1234)" class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-sm rounded-xl px-4 py-2.5 outline-none focus:border-blue-500 font-mono tracking-widest text-center">
+                    <span id="rh-login-error" class="text-xs text-rose-400 font-semibold mt-1 hidden block text-center">PIN ou credencial incorreta.</span>
+                </div>
+
+                <div class="flex gap-2.5 pt-1">
+                    <button type="button" onclick="app.closeRhLoginModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl border border-slate-700 transition">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/20 transition">
+                        Entrar no RH
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL: COMPROVANTE OFICIAL DE PONTO (PORTARIA 671 MTE)
+         ============================================================ -->
+    <div id="punch-receipt-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-4 animate-in fade-in zoom-in duration-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+                    <h3 class="font-bold text-white text-base">Ponto Registrado com Sucesso</h3>
+                </div>
+                <button onclick="app.closeReceiptModal()" class="text-slate-400 hover:text-white p-1 text-sm rounded-lg hover:bg-slate-800">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="receipt-content"></div>
+
+            <div class="flex items-center justify-between gap-3 pt-3">
+                <button onclick="app.printReceipt()" class="flex-1 py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl border border-slate-700 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-print"></i> Imprimir Comprovante
+                </button>
+                <button onclick="app.closeReceiptModal()" class="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-600/20 transition">
+                    OK, Concluir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL: VISUALIZAR DETALHES DA BATIDA (RESTRITO AO RH)
+         ============================================================ -->
+    <div id="punch-details-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <h3 class="font-bold text-white text-base flex items-center gap-2">
+                    <i class="fa-solid fa-camera-retro text-blue-400"></i> Detalhes da Batida com Foto
+                </h3>
+                <button onclick="app.closePunchDetailsModal()" class="text-slate-400 hover:text-white p-1 text-sm rounded-lg hover:bg-slate-800">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="punch-details-body" class="space-y-4"></div>
+
+            <div id="punch-details-actions" class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800"></div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL: EDITAR BATIDA DE PONTO (RESTRITO AO RH)
+         ============================================================ -->
+    <div id="edit-punch-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl relative space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <h3 class="font-bold text-white text-base flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-amber-400"></i> Editar Batida de Ponto
+                </h3>
+                <button onclick="app.closeEditPunchModal()" class="text-slate-400 hover:text-white p-1 text-sm rounded-lg hover:bg-slate-800">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="edit-punch-form" class="space-y-3.5">
+                <input type="hidden" id="edit-punch-id">
+                
+                <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs">
+                    <p id="edit-punch-emp-info" class="font-bold text-slate-200"></p>
+                    <p id="edit-punch-nsr-info" class="text-slate-400 font-mono"></p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Data</label>
+                        <input type="date" id="edit-punch-date" required class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Horário (HH:MM:SS)</label>
+                        <input type="text" id="edit-punch-time" required placeholder="08:00:00" class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500 font-mono">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Tipo da Batida</label>
+                    <select id="edit-punch-type" class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                        <option value="entrada">Entrada (Início de Jornada)</option>
+                        <option value="saida_intervalo">Saída para Intervalo/Almoço</option>
+                        <option value="retorno_intervalo">Retorno do Almoço</option>
+                        <option value="saida">Saída (Fim de Jornada)</option>
+                        <option value="entrada_extra">Entrada de Hora Extra</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Motivo / Justificativa da Alteração</label>
+                    <textarea id="edit-punch-notes" rows="3" required placeholder="Descreva o motivo da retificação..." class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl p-3 outline-none focus:border-blue-500"></textarea>
+                </div>
+
+                <div class="pt-3 flex gap-3">
+                    <button type="button" onclick="app.closeEditPunchModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl border border-slate-700 transition">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="flex-1 py-2.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-amber-600/20 transition">
+                        Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL: LISTAGEM DE BATIDAS DO DIA SELECIONADO NO ESPELHO
+         ============================================================ -->
+    <div id="day-punches-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 shadow-2xl relative space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div>
+                    <h3 class="font-bold text-white text-base flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-day text-blue-400"></i> Batidas do Dia
+                    </h3>
+                    <p id="day-punches-subtitle" class="text-xs text-slate-400"></p>
+                </div>
+                <button onclick="app.closeDayPunchesModal()" class="text-slate-400 hover:text-white p-1 text-sm rounded-lg hover:bg-slate-800">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="day-punches-list" class="space-y-3 max-h-96 overflow-y-auto pr-1"></div>
+
+            <div class="flex justify-end pt-2 border-t border-slate-800">
+                <button onclick="app.closeDayPunchesModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL: VISUALIZAR PERFIL DO COLABORADOR
+         ============================================================ -->
+    <div id="view-employee-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <h3 class="font-bold text-white text-base flex items-center gap-2">
+                    <i class="fa-solid fa-id-card text-blue-400"></i> Perfil do Colaborador
+                </h3>
+                <button onclick="app.closeViewEmployeeModal()" class="text-slate-400 hover:text-white p-1 text-sm rounded-lg hover:bg-slate-800">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="view-employee-content" class="space-y-4"></div>
+
+            <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
+                <button onclick="app.closeViewEmployeeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700">
+                    Fechar
+                </button>
+                <button id="view-employee-btn-edit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/20">
+                    <i class="fa-solid fa-pen-to-square"></i> Editar Perfil & Foto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL: EDITAR PERFIL & FOTO DO COLABORADOR (COM FOTO E PIN ÚNICO)
+         ============================================================ -->
+    <div id="edit-employee-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <h3 class="font-bold text-white text-base flex items-center gap-2">
+                    <i class="fa-solid fa-user-pen text-blue-400"></i> Editar Perfil e Foto do Colaborador
+                </h3>
+                <button onclick="app.closeEditEmployeeModal()" class="text-slate-400 hover:text-white p-1 text-sm rounded-lg hover:bg-slate-800">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="edit-employee-form" class="space-y-4">
+                <input type="hidden" id="edit-emp-id">
+
+                <!-- Seção Especial: Foto de Perfil com Upload e Webcam -->
+                <div class="p-4 bg-slate-950/80 rounded-2xl border border-slate-800 space-y-3">
+                    <label class="block text-xs font-bold text-slate-200 uppercase tracking-wider">
+                        Foto de Perfil (Editável)
+                    </label>
+
+                    <div class="flex flex-col sm:flex-row items-center gap-4">
+                        <div class="relative group">
+                            <img id="edit-emp-photo-preview" src="" alt="Preview" class="w-24 h-24 rounded-full object-cover border-4 border-blue-500/40 shadow-xl bg-slate-900">
+                            <span class="absolute bottom-1 right-1 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs shadow">
+                                <i class="fa-solid fa-camera"></i>
+                            </span>
+                        </div>
+
+                        <div class="flex-1 space-y-2 w-full text-center sm:text-left">
+                            <div class="flex flex-wrap gap-2 justify-center sm:justify-start">
+                                <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 cursor-pointer transition flex items-center gap-1.5 shadow-sm">
+                                    <i class="fa-solid fa-cloud-arrow-up text-blue-400"></i> Escolher do Computador
+                                    <input type="file" id="edit-emp-file-input" accept="image/*" class="hidden">
+                                </label>
+
+                                <button type="button" onclick="app.captureWebcamForProfileEdit()" class="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 text-xs font-bold rounded-xl border border-emerald-500/30 transition flex items-center gap-1.5 shadow-sm">
+                                    <i class="fa-solid fa-camera text-emerald-400"></i> Tirar Foto com Webcam
+                                </button>
+                            </div>
+                            <p class="text-[10px] text-slate-400">Selecione uma imagem ou capture da câmera.</p>
+                            <input type="url" id="edit-emp-photo-url" placeholder="Ou cole a URL da imagem aqui..." class="w-full bg-slate-900 border border-slate-800 text-slate-300 text-[11px] rounded-lg px-2.5 py-1.5 outline-none focus:border-blue-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dados Cadastrais -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nome Completo</label>
+                    <input type="text" id="edit-emp-name" required class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">E-mail Corporativo</label>
+                        <input type="email" id="edit-emp-email" required class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Cargo</label>
+                        <input type="text" id="edit-emp-role" required class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Departamento</label>
+                        <select id="edit-emp-department" class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                            <option value="Tecnologia da Informação">Tecnologia da Informação</option>
+                            <option value="Recursos Humanos / DP">Recursos Humanos / DP</option>
+                            <option value="Financeiro / Contábil">Financeiro / Contábil</option>
+                            <option value="Comercial & Vendas">Comercial & Vendas</option>
+                            <option value="Operações">Operações</option>
+                            <option value="Marketing">Marketing</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">CPF</label>
+                        <input type="text" id="edit-emp-cpf" required class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Matrícula</label>
+                        <input type="text" id="edit-emp-registration" required class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Horas/Dia</label>
+                        <input type="number" id="edit-emp-daily-hours" min="4" max="12" value="8" required class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">
+                            PIN Único
+                        </label>
+                        <input type="password" maxlength="6" id="edit-emp-pin" placeholder="Deixe em branco ou coloque PIN único" class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500 font-mono">
+                    </div>
+                </div>
+
+                <div class="pt-3 flex gap-3">
+                    <button type="button" onclick="app.closeEditEmployeeModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl border border-slate-700 transition">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/20 transition">
+                        Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL: CADASTRO DE NOVO COLABORADOR (RH)
+         ============================================================ -->
+    <div id="new-employee-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <h3 class="font-bold text-white text-base flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus text-blue-400"></i> Cadastrar Novo Colaborador
+                </h3>
+                <button onclick="app.closeNewEmployeeModal()" class="text-slate-400 hover:text-white p-1 text-sm rounded-lg hover:bg-slate-800">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="new-employee-form" class="space-y-3.5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Nome Completo</label>
+                    <input type="text" id="new-emp-name" required placeholder="Ex: Patrícia Alves Souza" class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">E-mail Corporativo</label>
+                        <input type="email" id="new-emp-email" required placeholder="patricia@empresa.com.br" class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Cargo</label>
+                        <input type="text" id="new-emp-role" required placeholder="Ex: Analista de Operações" class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Departamento</label>
+                        <select id="new-emp-department" class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                            <option value="Tecnologia da Informação">Tecnologia da Informação</option>
+                            <option value="Recursos Humanos / DP">Recursos Humanos / DP</option>
+                            <option value="Financeiro / Contábil">Financeiro / Contábil</option>
+                            <option value="Comercial & Vendas">Comercial & Vendas</option>
+                            <option value="Operações">Operações</option>
+                            <option value="Marketing">Marketing</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">CPF</label>
+                        <input type="text" id="new-emp-cpf" required placeholder="000.000.000-00" class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Matrícula</label>
+                        <input type="text" id="new-emp-registration" required placeholder="MAT-2026-099" class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">PIN Único (Deixe em branco ou coloque único)</label>
+                        <input type="password" maxlength="6" id="new-emp-pin" placeholder="Ex: 8899" class="w-full bg-slate-950 border border-slate-700 text-slate-200 text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="pt-3 flex gap-3">
+                    <button type="button" onclick="app.closeNewEmployeeModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl border border-slate-700 transition">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-blue-600/20 transition">
+                        Salvar Colaborador
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL: CONFIRMAÇÃO DE EXCLUSÃO (BATIDA OU COLABORADOR)
+         ============================================================ -->
+    <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 shadow-2xl relative space-y-4 text-center">
+            <div class="w-14 h-14 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center mx-auto text-2xl border border-rose-500/30">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+                <h3 id="confirm-title" class="font-bold text-white text-base">Confirmar Exclusão</h3>
+                <p id="confirm-message" class="text-xs text-slate-400 mt-1 leading-relaxed">Tem certeza que deseja prosseguir?</p>
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="button" onclick="app.closeConfirmModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl border border-slate-700">
+                    Cancelar
+                </button>
+                <button type="button" id="confirm-btn-action" class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-rose-600/30">
+                    Excluir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL: MODO TOTEM TOUCH (TABLET DA RECEPÇÃO)
+         ============================================================ -->
+    <div id="totem-modal" class="hidden fixed inset-0 z-50 bg-slate-950 flex flex-col justify-between p-6 sm:p-10">
+        <div class="flex items-center justify-between max-w-3xl w-full mx-auto">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center text-white text-2xl font-black shadow-lg">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-black text-white">Totem de Ponto</h2>
+                    <p class="text-xs text-slate-400">Digite seu PIN ou Matrícula para registrar instantaneamente com foto</p>
+                </div>
+            </div>
+            <button onclick="app.closeTotemMode()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl border border-slate-700 transition">
+                <i class="fa-solid fa-arrow-left"></i> Sair do Totem
+            </button>
+        </div>
+
+        <div class="max-w-md w-full mx-auto my-auto space-y-6">
+            <div id="totem-feedback-box"></div>
+
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl text-center shadow-2xl">
+                <span class="text-xs text-slate-400 uppercase tracking-widest font-bold block mb-2">Digite o PIN do Colaborador</span>
+                <div id="totem-pin-display" class="font-mono text-3xl font-extrabold text-slate-600 tracking-widest py-3 bg-slate-950 rounded-2xl border border-slate-800 mb-6">
+                    ••••
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <button onclick="app.handleTotemNumpad('1')" class="numpad-btn h-14 bg-slate-800 hover:bg-slate-700 text-white font-mono text-xl font-bold rounded-2xl border border-slate-700 shadow">1</button>
+                    <button onclick="app.handleTotemNumpad('2')" class="numpad-btn h-14 bg-slate-800 hover:bg-slate-700 text-white font-mono text-xl font-bold rounded-2xl border border-slate-700 shadow">2</button>
+                    <button onclick="app.handleTotemNumpad('3')" class="numpad-btn h-14 bg-slate-800 hover:bg-slate-700 text-white font-mono text-xl font-bold rounded-2xl border border-slate-700 shadow">3</button>
+
+                    <button onclick="app.handleTotemNumpad('4')" class="numpad-btn h-14 bg-slate-800 hover:bg-slate-700 text-white font-mono text-xl font-bold rounded-2xl border border-slate-700 shadow">4</button>
+                    <button onclick="app.handleTotemNumpad('5')" class="numpad-btn h-14 bg-slate-800 hover:bg-slate-700 text-white font-mono text-xl font-bold rounded-2xl border border-slate-700 shadow">5</button>
+                    <button onclick="app.handleTotemNumpad('6')" class="numpad-btn h-14 bg-slate-800 hover:bg-slate-700 text-white font-mono text-xl font-bold rounded-2xl border border-slate-700 shadow">6</button>
+
+                    <button onclick="app.handleTotemNumpad('7')" class="numpad-btn h-14 bg-slate-800 hover:bg-slate-700 text-white font-mono text-xl font-bold rounded-2xl border border-slate-700 shadow">7</button>
+                    <button onclick="app.handleTotemNumpad('8')" class="numpad-btn h-14 bg-slate-800 hover:bg-slate-700 text-white font-mono text-xl font-bold rounded-2xl border border-slate-700 shadow">8</button>
+                    <button onclick="app.handleTotemNumpad('9')" class="numpad-btn h-14 bg-slate-800 hover:bg-slate-700 text-white font-mono text-xl font-bold rounded-2xl border border-slate-700 shadow">9</button>
+
+                    <button onclick="app.handleTotemNumpad('clear')" class="numpad-btn h-14 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 font-bold text-xs rounded-2xl border border-rose-800/40 uppercase">Limpar</button>
+                    <button onclick="app.handleTotemNumpad('0')" class="numpad-btn h-14 bg-slate-800 hover:bg-slate-700 text-white font-mono text-xl font-bold rounded-2xl border border-slate-700 shadow">0</button>
+                    <button onclick="app.handleTotemNumpad('backspace')" class="numpad-btn h-14 bg-slate-800 hover:bg-slate-700 text-amber-400 text-base font-bold rounded-2xl border border-slate-700 shadow">
+                        <i class="fa-solid fa-delete-left"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center text-xs text-slate-500 max-w-3xl w-full mx-auto">
+            Dispositivo em conformidade com as diretrizes da Portaria MTE 671/2021
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <!-- Scripts da Aplicação -->
+    <script src="js/database.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
